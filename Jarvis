@@ -1,0 +1,58 @@
+git init
+git add track.rb
+git commit -m "Erster Track"
+git remote add origin https://github.com/DEIN-NAME/guetta-style-track.git
+git push -u origin main
+use_bpm 128
+
+define :drop do
+  4.times do
+    sample :bd_haus, amp: 2
+    sleep 0.5
+    sample :drum_cymbal_closed, amp: 0.5
+    sleep 0.5
+  end
+end
+
+# Intro: Akkorde
+live_loop :chords do
+  use_synth :supersaw
+  [:e3, :c3, :g3, :d3].each do |n|
+    play_chord chord(n, :major7), release: 3.5, cutoff: 95, amp: 0.8
+    sleep 4
+  end
+end
+
+# Kick + Hats
+live_loop :beat, sync: :chords do
+  drop
+end
+
+# Clap auf 2 und 4
+live_loop :clap, sync: :chords do
+  sleep 1
+  sample :drum_snare_hard, amp: 0.8
+  sleep 1
+end
+
+# Bass
+live_loop :bass, sync: :chords do
+  use_synth :tb303
+  8.times do
+    play :e1, release: 0.2, cutoff: rrand(70, 110), amp: 0.7
+    sleep 0.5
+  end
+end
+
+# Build-up: steigender Riser
+live_loop :riser do
+  use_synth :saw
+  with_fx :reverb do
+    16.times do |i|
+      play 60 + i, release: 0.2, amp: 0.2 + i * 0.03
+      sleep 0.25
+    end
+  end
+  sleep 12
+end
+
