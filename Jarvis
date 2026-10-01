@@ -1,58 +1,47 @@
-git init
-git add track.rb
-git commit -m "Erster Track"
-git remote add origin https://github.com/DEIN-NAME/guetta-style-track.git
-git push -u origin main
-use_bpm 128
+import datetime
+import webbrowser
+import pyttsx3
+import speech_recognition as sr
 
-define :drop do
-  4.times do
-    sample :bd_haus, amp: 2
-    sleep 0.5
-    sample :drum_cymbal_closed, amp: 0.5
-    sleep 0.5
-  end
-end
+engine = pyttsx3.init()
+engine.setProperty("rate", 175)
 
-# Intro: Akkorde
-live_loop :chords do
-  use_synth :supersaw
-  [:e3, :c3, :g3, :d3].each do |n|
-    play_chord chord(n, :major7), release: 3.5, cutoff: 95, amp: 0.8
-    sleep 4
-  end
-end
+def sprich(text):
+    print("Jarvis:", text)
+    engine.say(text)
+    engine.runAndWait()
 
-# Kick + Hats
-live_loop :beat, sync: :chords do
-  drop
-end
+def zuhoeren():
+    r = sr.Recognizer()
+    with sr.Microphone() as quelle:
+        r.adjust_for_ambient_noise(quelle, duration=0.5)
+        audio = r.listen(quelle, phrase_time_limit=6)
+    try:
+        return r.recognize_google(audio, language="de-DE").lower()
+    except sr.UnknownValueError:
+        return ""
 
-# Clap auf 2 und 4
-live_loop :clap, sync: :chords do
-  sleep 1
-  sample :drum_snare_hard, amp: 0.8
-  sleep 1
-end
+def befehl_ausfuehren(text):
+    if "uhrzeit" in text or "wie spät" in text:
+        sprich("Es ist " + datetime.datetime.now().strftime("%H:%M") + " Uhr.")
+    elif "guetta" in text:
+        sprich("Wird gemacht, Sir.")
+        webbrowser.open("https://www.youtube.com/results?search_query=david+guetta")
+    elif "öffne google" in text:
+        webbrowser.open("https://www.google.com")
+    elif "suche" in text:
+        suche = text.split("suche", 1)[1].strip()
+        webbrowser.open("https://www.google.com/search?q=" + suche)
+    elif "beenden" in text or "tschüss" in text:
+        sprich("Bis später, Sir.")
+        return False
+    else:
+        sprich("Das habe ich nicht verstanden.")
+    return True
 
-# Bass
-live_loop :bass, sync: :chords do
-  use_synth :tb303
-  8.times do
-    play :e1, release: 0.2, cutoff: rrand(70, 110), amp: 0.7
-    sleep 0.5
-  end
-end
-
-# Build-up: steigender Riser
-live_loop :riser do
-  use_synth :saw
-  with_fx :reverb do
-    16.times do |i|
-      play 60 + i, release: 0.2, amp: 0.2 + i * 0.03
-      sleep 0.25
-    end
-  end
-  sleep 12
-end
-
+sprich("Jarvis ist online. Wie kann ich helfen?")
+laeuft = True
+while laeuft:
+    gehoert = zuhoeren()
+    if "jarvis" in gehoert:
+        laeuft = befehl_ausfuehren(gehoert.replace("jarvis", "").strip())
